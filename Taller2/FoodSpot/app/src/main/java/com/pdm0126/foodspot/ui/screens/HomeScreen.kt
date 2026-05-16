@@ -5,13 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,9 +27,11 @@ import com.pdm0126.foodspot.ui.viewmodel.HomeViewModel
 fun HomeScreen(
     viewModel: HomeViewModel,
     onRestaurantClick: (Int) -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    onCartClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val cartCount by viewModel.cartItemCount.collectAsState()
 
     Scaffold(
         topBar = {
@@ -35,6 +40,18 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = onSearchClick) {
                         Icon(Icons.Default.Search, contentDescription = "Buscar")
+                    }
+                    BadgedBox(
+                        badge = {
+                            if (cartCount > 0) {
+                                Badge { Text(cartCount.toString()) }
+                            }
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        IconButton(onClick = onCartClick) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito")
+                        }
                     }
                 }
             )
@@ -77,7 +94,8 @@ fun RestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(200.dp)
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column {
             AsyncImage(
@@ -85,13 +103,21 @@ fun RestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
                 contentDescription = restaurant.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                 contentScale = ContentScale.Crop
             )
             Text(
                 text = restaurant.name,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(8.dp)
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+            Text(
+                text = restaurant.categories.firstOrNull() ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             )
         }
     }

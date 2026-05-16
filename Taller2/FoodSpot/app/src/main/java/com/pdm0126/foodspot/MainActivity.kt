@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.pdm0126.foodspot.data.HardcodedRestaurantRepository
+import com.pdm0126.foodspot.data.MemoryCartRepository
 import com.pdm0126.foodspot.ui.navigation.FoodSpotNavGraph
 import com.pdm0126.foodspot.ui.theme.FoodSpotTheme
 
@@ -17,7 +18,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val repository = HardcodedRestaurantRepository()
+        val restaurantRepository = HardcodedRestaurantRepository()
+        val cartRepository = MemoryCartRepository()
         setContent {
             FoodSpotTheme {
                 Surface(
@@ -27,7 +29,8 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     FoodSpotNavGraph(
                         navController = navController,
-                        repository = repository
+                        restaurantRepository = restaurantRepository,
+                        cartRepository = cartRepository
                     )
                 }
             }
