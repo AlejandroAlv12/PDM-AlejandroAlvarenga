@@ -114,7 +114,7 @@ fun RestaurantCard(restaurant: Restaurant, onClick: () -> Unit) {
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
             Text(
-                text = restaurant.categories.firstOrNull() ?: "",
+                text = restaurant.description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
