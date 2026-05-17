@@ -1,93 +1,80 @@
 package com.pdm0126.foodspot.ui.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.*
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
+import androidx.navigation3.ui.NavDisplay
 import com.pdm0126.foodspot.data.CartRepository
 import com.pdm0126.foodspot.data.RestaurantRepository
-import com.pdm0126.foodspot.ui.screens.CartScreen
-import com.pdm0126.foodspot.ui.screens.DetailScreen
-import com.pdm0126.foodspot.ui.screens.HomeScreen
-import com.pdm0126.foodspot.ui.screens.SearchScreen
-import com.pdm0126.foodspot.ui.viewmodel.CartViewModel
-import com.pdm0126.foodspot.ui.viewmodel.DetailViewModel
-import com.pdm0126.foodspot.ui.viewmodel.HomeViewModel
-import com.pdm0126.foodspot.ui.viewmodel.SearchViewModel
+import com.pdm0126.foodspot.ui.screens.*
+import com.pdm0126.foodspot.ui.viewmodel.*
+import kotlinx.serialization.Serializable
 
-sealed class Screen(val route: String) {
-    object Home : Screen("home")
-    object Detail : Screen("detail/{id}") {
-        fun createRoute(id: Int) = "detail/$id"
-    }
-    object Search : Screen("search")
-    object Cart : Screen("cart")
-}
-
-class FoodSpotViewModelFactory(
-    private val restaurantRepository: RestaurantRepository,
-    private val cartRepository: CartRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return when {
-            modelClass.isAssignableFrom(HomeViewModel::class.java) -> HomeViewModel(restaurantRepository, cartRepository) as T
-            modelClass.isAssignableFrom(DetailViewModel::class.java) -> DetailViewModel(restaurantRepository, cartRepository) as T
-            modelClass.isAssignableFrom(SearchViewModel::class.java) -> SearchViewModel(restaurantRepository, cartRepository) as T
-            modelClass.isAssignableFrom(CartViewModel::class.java) -> CartViewModel(cartRepository) as T
-            else -> throw IllegalArgumentException()
-        }
-    }
-}
+@Serializable data object HomeRoute : NavKey
+@Serializable data class DetailRoute(val id: Int) : NavKey
+@Serializable data object SearchRoute : NavKey
+@Serializable data object CartRoute : NavKey
 
 @Composable
-fun FoodSpotNavGraph(
-    navController: NavHostController,
-    restaurantRepository: RestaurantRepository,
-    cartRepository: CartRepository
-) {
-    val factory = FoodSpotViewModelFactory(restaurantRepository, cartRepository)
-    NavHost(navController, Screen.Home.route) {
-        composable(Screen.Home.route) {
-            HomeScreen(
-                viewModel = viewModel(factory = factory),
-                onRestaurantClick = { navController.navigate(Screen.Detail.createRoute(it)) },
-                onSearchClick = { navController.navigate(Screen.Search.route) },
-                onCartClick = { navController.navigate(Screen.Cart.route) }
-            )
+fun FoodSpotNavGraph(resRepo: RestaurantRepository, cartRepo: CartRepository) {
+    val factory = remember(resRepo, cartRepo) { FoodSpotViewModelFactory(resRepo, cartRepo) }
+    val stack = remember { mutableStateListOf<NavKey>(HomeRoute) }
+    val pop = { if (stack.size > 1) stack.removeAt(stack.size - 1) }
+
+    val entryProvider = entryProvider {
+        entry<HomeRoute> {
+            HomeScreen(viewModel(factory = factory), { stack.add(DetailRoute(it)) }, { stack.add(SearchRoute) }, { stack.add(CartRoute) })
         }
-        composable(
-            route = Screen.Detail.route,
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt("id") ?: 0
+        entry<DetailRoute> { key ->
             val vm: DetailViewModel = viewModel(factory = factory)
-            vm.loadRestaurant(id)
-            DetailScreen(
-                viewModel = vm,
-                onBackClick = { navController.popBackStack() },
-                onCartClick = { navController.navigate(Screen.Cart.route) }
-            )
+            LaunchedEffect(key.id) { vm.loadRestaurant(key.id) }
+            DetailScreen(vm, pop, { stack.add(CartRoute) })
         }
-        composable(Screen.Search.route) {
-            SearchScreen(
-                viewModel = viewModel(factory = factory),
-                onRestaurantClick = { navController.navigate(Screen.Detail.createRoute(it)) },
-                onBackClick = { navController.popBackStack() },
-                onCartClick = { navController.navigate(Screen.Cart.route) }
-            )
+        entry<SearchRoute> {
+            SearchScreen(viewModel(factory = factory), { stack.add(DetailRoute(it)) }, pop, { stack.add(CartRoute) })
         }
-        composable(Screen.Cart.route) {
-            CartScreen(
-                viewModel = viewModel(factory = factory),
-                onBackClick = { navController.popBackStack() }
-            )
+        entry<CartRoute> {
+            CartScreen(viewModel(factory = factory), pop)
         }
     }
+
+    val animDuration = 300 
+    val slideSpec = tween<IntOffset>(animDuration, easing = LinearEasing)
+    val fadeSpec = tween<Float>(animDuration, easing = LinearEasing)
+
+    NavDisplay(
+        modifier = Modifier.background(Color.Black),
+        entries = rememberDecoratedNavEntries(backStack = stack, entryProvider = entryProvider),
+        onBack = pop,
+        transitionSpec = {
+            slideInHorizontally(slideSpec) { it } togetherWith fadeOut(fadeSpec, targetAlpha = 0.5f)
+        },
+        popTransitionSpec = {
+            fadeIn(fadeSpec, initialAlpha = 0.5f) togetherWith slideOutHorizontally(slideSpec) { it }
+        },
+        predictivePopTransitionSpec = {
+            fadeIn(fadeSpec, initialAlpha = 0.5f) togetherWith slideOutHorizontally(slideSpec) { it }
+        }
+    )
+}
+
+class FoodSpotViewModelFactory(private val r: RestaurantRepository, private val c: CartRepository) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = when (modelClass) {
+        HomeViewModel::class.java -> HomeViewModel(r, c)
+        DetailViewModel::class.java -> DetailViewModel(r, c)
+        SearchViewModel::class.java -> SearchViewModel(r, c)
+        CartViewModel::class.java -> CartViewModel(c)
+        else -> error("Unknown VM: $modelClass")
+    } as T
 }
