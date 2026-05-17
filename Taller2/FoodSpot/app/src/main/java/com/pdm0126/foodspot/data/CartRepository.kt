@@ -18,31 +18,20 @@ class MemoryCartRepository : CartRepository {
 
     override fun addItem(dish: Dish, restaurantName: String) {
         _cartItems.update { current ->
-            val existing = current.find { it.dish.id == dish.id }
-            if (existing != null) {
-                current.map {
-                    if (it.dish.id == dish.id) it.copy(quantity = it.quantity + 1) else it
-                }
-            } else {
-                current + CartItem(dish, restaurantName)
-            }
+            val item = current.find { it.dish.id == dish.id }
+            if (item != null) current.map { if (it.dish.id == dish.id) it.copy(quantity = it.quantity + 1) else it }
+            else current + CartItem(dish, restaurantName)
         }
     }
 
     override fun removeItem(dishId: Int) {
         _cartItems.update { current ->
-            val existing = current.find { it.dish.id == dishId }
-            if (existing != null && existing.quantity > 1) {
-                current.map {
-                    if (it.dish.id == dishId) it.copy(quantity = it.quantity - 1) else it
-                }
-            } else {
-                current.filterNot { it.dish.id == dishId }
-            }
+            current.find { it.dish.id == dishId }?.let { item ->
+                if (item.quantity > 1) current.map { if (it.dish.id == dishId) it.copy(quantity = it.quantity - 1) else it }
+                else current.filterNot { it.dish.id == dishId }
+            } ?: current
         }
     }
 
-    override fun clearCart() {
-        _cartItems.value = emptyList()
-    }
+    override fun clearCart() { _cartItems.value = emptyList() }
 }

@@ -14,21 +14,11 @@ data class CartUiState(
     val total: Double = 0.0
 )
 
-class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
-    val uiState: StateFlow<CartUiState> = cartRepository.cartItems
-        .map { items ->
-            CartUiState(
-                items = items,
-                total = items.sumOf { it.quantity * it.dish.price }
-            )
-        }
+class CartViewModel(private val cartRepo: CartRepository) : ViewModel() {
+    val uiState = cartRepo.cartItems
+        .map { items -> CartUiState(items, items.sumOf { it.quantity * it.dish.price }) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CartUiState())
 
-    fun removeItem(dishId: Int) {
-        cartRepository.removeItem(dishId)
-    }
-
-    fun clearCart() {
-        cartRepository.clearCart()
-    }
+    fun removeItem(dishId: Int) = cartRepo.removeItem(dishId)
+    fun clearCart() = cartRepo.clearCart()
 }

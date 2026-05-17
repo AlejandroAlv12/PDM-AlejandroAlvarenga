@@ -23,20 +23,17 @@ class DetailViewModel(
     private val cartRepository: CartRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DetailUiState())
-    val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
-    val cartItemCount: StateFlow<Int> = cartRepository.cartItems
-        .map { items -> items.sumOf { it.quantity } }
+    val cartItemCount = cartRepository.cartItems
+        .map { it.sumOf { item -> item.quantity } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     fun loadRestaurant(id: Int) {
-        val restaurant = repository.getRestaurantById(id)
-        _uiState.value = DetailUiState(restaurant = restaurant, isLoading = false)
+        _uiState.value = DetailUiState(repository.getRestaurantById(id), false)
     }
 
     fun addToCart(dish: Dish) {
-        uiState.value.restaurant?.let {
-            cartRepository.addItem(dish, it.name)
-        }
+        uiState.value.restaurant?.let { cartRepository.addItem(dish, it.name) }
     }
 }
