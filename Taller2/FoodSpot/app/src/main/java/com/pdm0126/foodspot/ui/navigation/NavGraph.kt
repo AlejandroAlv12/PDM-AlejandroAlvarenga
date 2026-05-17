@@ -30,18 +30,21 @@ fun FoodSpotNavGraph(resRepo: RestaurantRepository, cartRepo: CartRepository) {
     val factory = remember(resRepo, cartRepo) { FoodSpotViewModelFactory(resRepo, cartRepo) }
     val stack = remember { mutableStateListOf<NavKey>(HomeRoute) }
     val pop = { if (stack.size > 1) stack.removeAt(stack.size - 1) }
+    val push = { route: NavKey -> 
+        if (stack.lastOrNull()?.javaClass != route.javaClass) stack.add(route) 
+    }
 
     val entryProvider = entryProvider {
         entry<HomeRoute> {
-            HomeScreen(viewModel(factory = factory), { stack.add(DetailRoute(it)) }, { stack.add(SearchRoute) }, { stack.add(CartRoute) })
+            HomeScreen(viewModel(factory = factory), { push(DetailRoute(it)) }, { push(SearchRoute) }, { push(CartRoute) })
         }
         entry<DetailRoute> { key ->
             val vm: DetailViewModel = viewModel(factory = factory)
             LaunchedEffect(key.id) { vm.loadRestaurant(key.id) }
-            DetailScreen(vm, pop, { stack.add(CartRoute) })
+            DetailScreen(vm, pop, { push(CartRoute) })
         }
         entry<SearchRoute> {
-            SearchScreen(viewModel(factory = factory), { stack.add(DetailRoute(it)) }, pop, { stack.add(CartRoute) })
+            SearchScreen(viewModel(factory = factory), { push(DetailRoute(it)) }, pop, { push(CartRoute) })
         }
         entry<CartRoute> {
             CartScreen(viewModel(factory = factory), pop)
