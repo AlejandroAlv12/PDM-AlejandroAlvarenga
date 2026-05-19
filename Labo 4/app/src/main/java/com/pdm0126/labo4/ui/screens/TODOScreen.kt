@@ -18,5 +18,18 @@ fun TODOScreen(viewModel: GeneralViewModel) {
     val tasks = viewModel.tasks.collectAsState()
     val lista = mutableListOf<Card>()
 
+    tasks.value.forEach { task ->
+        Log.d("Task", task.toString())
+        lista.add(
+            Card(
+                pos = task.id,
+                title = task.title,
+                description = task.description,
+                endDate = task.endDate,
+                checked = task.isCompleted
+            )
+        )
+    }
+
 
 }
