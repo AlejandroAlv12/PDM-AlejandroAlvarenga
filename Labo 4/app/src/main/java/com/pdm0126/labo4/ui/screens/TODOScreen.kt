@@ -8,14 +8,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pdm0126.labo4.model.Card
 import com.pdm0126.labo4.viewmodel.GeneralViewModel
+import java.util.Date
 
 @Composable
 fun TODOScreen(viewModel: GeneralViewModel) {
     val tasks = viewModel.tasks.collectAsState()
+
+    val newCard = remember {
+        mutableStateOf(Card(tasks.value.size + 1, "", "", Date(), false))
+    }
+
     val lista = mutableListOf<Card>()
 
     tasks.value.forEach { task ->
@@ -30,7 +38,7 @@ fun TODOScreen(viewModel: GeneralViewModel) {
             )
         )
     }
-    Column(modifier = Modifier.padding(16.dp)) {
+
         Text(text = "Lista de tareas", modifier = Modifier.padding(bottom = 8.dp))
         LazyColumn {
             items(lista) { item ->
@@ -39,4 +47,3 @@ fun TODOScreen(viewModel: GeneralViewModel) {
         }
     }
 
-}
