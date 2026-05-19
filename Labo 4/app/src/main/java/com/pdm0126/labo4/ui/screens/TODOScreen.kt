@@ -2,6 +2,7 @@ package com.pdm0126.labo4.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,12 +13,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card as M3Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pdm0126.labo4.model.Card
@@ -30,7 +34,7 @@ fun TODOScreen(viewModel: GeneralViewModel) {
     val tasks = viewModel.tasks.collectAsState()
 
     val newCard = remember {
-        mutableStateOf(Card(tasks.value.size + 1, "", "", Date(), false))
+        mutableStateOf(Card(0, "", "", Date(), false))
     }
 
     val lista = mutableListOf<Card>()
@@ -71,16 +75,17 @@ fun TODOScreen(viewModel: GeneralViewModel) {
 
         Button(
             onClick = {
+                val nextId = tasks.value.size + 1
                 val task = Task(
-                    id = newCard.value.pos,
+                    id = nextId,
                     title = newCard.value.title,
                     description = newCard.value.description,
                     endDate = newCard.value.endDate,
-                    isCompleted = newCard.value.checked
+                    isCompleted = false
                 )
                 viewModel.addTask(task)
 
-                newCard.value = Card(tasks.value.size + 2, "", "", Date(), false)
+                newCard.value = Card(0, "", "", Date(), false)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -96,28 +101,34 @@ fun TODOScreen(viewModel: GeneralViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (item.checked) Color(0xFFC8E6C9) else Color(0xFFFFCDD2)
+                    )
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "${item.pos}. ${item.title}",
-                            style = MaterialTheme.typography.titleMedium
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = item.checked,
+                            onCheckedChange = { 
+                                viewModel.toggleTask(item.pos) 
+                            }
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = item.description,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = if (item.checked) "Estado: Completada" else "Estado: Pendiente",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (item.checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                        )
+                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                            Text(
+                                text = "${item.pos}. ${item.title}",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = item.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
-
