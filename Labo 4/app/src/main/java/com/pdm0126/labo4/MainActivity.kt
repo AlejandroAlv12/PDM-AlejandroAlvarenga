@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.pdm0126.labo4.ui.screens.TODOScreen
 import com.pdm0126.labo4.ui.theme.Labo4Theme
 import com.pdm0126.labo4.viewmodel.GeneralViewModel
 
@@ -32,7 +33,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("todo_list") {
-
+                            TODOScreen(viewModel = viewModel)
                         }
                     }
                 }
