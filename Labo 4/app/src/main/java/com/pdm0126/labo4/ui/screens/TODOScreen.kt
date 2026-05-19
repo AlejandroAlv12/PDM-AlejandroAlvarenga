@@ -30,6 +30,13 @@ fun TODOScreen(viewModel: GeneralViewModel) {
             )
         )
     }
-
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Lista de tareas", modifier = Modifier.padding(bottom = 8.dp))
+        LazyColumn {
+            items(lista) { item ->
+                Text(text = "${item.pos}: ${item.title} - ${if (item.checked) "Completada" else "Pendiente"}")
+            }
+        }
+    }
 
 }
