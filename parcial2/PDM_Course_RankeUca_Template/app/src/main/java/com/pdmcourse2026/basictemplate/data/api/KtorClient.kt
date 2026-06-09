@@ -15,14 +15,12 @@ import kotlinx.serialization.json.Json
 
 object KtorClient {
   val client = HttpClient(OkHttp) {
-    // Parseo automático de JSON
     install(ContentNegotiation) {
       json(Json {
         ignoreUnknownKeys = true
       })
     }
 
-    // Plugin de logging
     install(Logging) {
       logger = object : Logger {
         override fun log(message: String) {
@@ -32,7 +30,6 @@ object KtorClient {
       level = LogLevel.ALL
     }
 
-    // Configuración aplicada a todas las peticiones
     defaultRequest {
       url(ApiConstants.BASE_URL)
       header(HttpHeaders.Accept, "application/json")
