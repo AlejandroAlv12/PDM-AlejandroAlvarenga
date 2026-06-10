@@ -1,6 +1,7 @@
 package com.pdm0126.labo5.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -103,7 +104,9 @@ fun TODOScreen(viewModel: GeneralViewModel) {
                         .padding(vertical = 4.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (item.checked) Color(0xFFC8E6C9) else Color(0xFFFFCDD2)
+                        containerColor = if (item.checked) {
+                            if (isSystemInDarkTheme()) Color(0xFF1B5E20) else Color(0xFFC8E6C9)
+                        } else MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
                     Row(
@@ -113,7 +116,9 @@ fun TODOScreen(viewModel: GeneralViewModel) {
                         Checkbox(
                             checked = item.checked,
                             onCheckedChange = { 
-                                viewModel.toggleTask(item.pos) 
+                                tasks.value.find { it.id == item.pos }?.let { task ->
+                                    viewModel.toggleTask(task)
+                                }
                             }
                         )
                         Column(modifier = Modifier.padding(start = 8.dp)) {
