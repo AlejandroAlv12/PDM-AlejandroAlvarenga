@@ -13,6 +13,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.pdm0126.labo5.data.AppDatabase
+import com.pdm0126.labo5.data.TaskRepository
 import com.pdm0126.labo5.ui.screens.TODOScreen
 import com.pdm0126.labo5.ui.theme.Labo5Theme
 import com.pdm0126.labo5.viewmodel.GeneralViewModel
@@ -20,11 +22,17 @@ import com.pdm0126.labo5.viewmodel.GeneralViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        val database by lazy { AppDatabase.getDatabase(this) }
+        val repository by lazy { TaskRepository(database.taskDao()) }
+        
         enableEdgeToEdge()
         setContent {
             Labo5Theme {
                 val navController = rememberNavController()
-                val viewModel: GeneralViewModel = viewModel()
+                val viewModel: GeneralViewModel = viewModel(
+                    factory = GeneralViewModel.Factory(repository)
+                )
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
