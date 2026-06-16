@@ -9,4 +9,7 @@ sealed class Routes : NavKey {
 
   @Serializable
   data object Results : Routes()
+
+  @Serializable
+  data object Options : Routes()
 }

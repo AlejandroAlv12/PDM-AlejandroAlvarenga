@@ -4,6 +4,13 @@ import android.content.Context
 import com.pdmcourse2026.basictemplate.data.database.AppDatabase
 import com.pdmcourse2026.basictemplate.data.repository.OptionRepository
 import com.pdmcourse2026.basictemplate.data.repository.OptionRepositoryImpl
+import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepository
+import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepositoryImpl
+import com.pdmcourse2026.basictemplate.data.repository.UserPreferencesRepository
+import com.pdmcourse2026.basictemplate.data.repository.UserPreferencesRepositoryImpl
+import androidx.datastore.preferences.preferencesDataStore
+
+private val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
 class AppProvider(context: Context) {
     private val database: AppDatabase by lazy {
@@ -16,5 +23,13 @@ class AppProvider(context: Context) {
 
     val optionRepository: OptionRepository by lazy {
         OptionRepositoryImpl(optionDao)
+    }
+
+    val rankeUcaRepository: RankeUcaRepository by lazy {
+        RankeUcaRepositoryImpl(optionDao)
+    }
+
+    val userPreferencesRepository: UserPreferencesRepository by lazy {
+        UserPreferencesRepositoryImpl(context.dataStore)
     }
 }
