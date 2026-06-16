@@ -7,10 +7,18 @@ import com.pdmcourse2026.basictemplate.ui.models.PlaceModel
 
 @Entity(tableName = "options")
 data class OptionEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: Int,
     val name: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val votes: Int
+)
+
+fun OptionEntity.toPlaceModel(): PlaceModel = PlaceModel(
+    id = this.id,
+    name = this.name,
+    imageUrl = this.imageUrl,
+    votes = this.votes
 )
 
 fun OptionEntity.toModel(): Option = Option(
@@ -22,5 +30,6 @@ fun OptionEntity.toModel(): Option = Option(
 fun Option.toEntity(): OptionEntity = OptionEntity(
     id = this.id,
     name = this.name,
-    imageUrl = this.imageUrl
+    imageUrl = this.imageUrl,
+    votes = 0 // O el valor que corresponda si Option tuviera votos
 )
