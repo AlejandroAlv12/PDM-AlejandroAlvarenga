@@ -33,7 +33,10 @@ fun RankeUCA_App() {
             entry<Routes.Results> {
                 ResultsScreen(
                     viewModel = resultsViewModel,
-                    onNavigateToVoting = { backStack.removeLastOrNull() }
+                    onNavigateToVoting = {
+                        votingViewModel.resetVote()
+                        backStack.removeLastOrNull()
+                    }
                 )
             }
             entry<Routes.Options> {

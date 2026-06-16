@@ -81,6 +81,13 @@ class VotingViewModel(
     fun resetVote() {
         viewModelScope.launch {
             userPreferencesRepository.clearPreferences()
+            _uiState.update { state ->
+                state.copy(
+                    isVoteSuccessful = false,
+                    selectedPlaceId = null,
+                    places = state.places.map { it.copy(isSelected = false) }
+                )
+            }
         }
     }
 
