@@ -61,7 +61,7 @@ class VotingViewModel(
                             isLoading = false,
                             selectedPlaceId = placeId,
                             isVoteSuccessful = true,
-                            places = state.places.map { 
+                            places = state.places.map {
                                 it.copy(isSelected = it.id == placeId)
                             }
                         )

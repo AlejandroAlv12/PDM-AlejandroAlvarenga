@@ -1,10 +1,27 @@
 package com.pdmcourse2026.basictemplate.data.database
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.pdmcourse2026.basictemplate.data.database.dao.OptionDao
 import com.pdmcourse2026.basictemplate.data.database.entities.OptionEntity
 
-@Database(entities = [OptionEntity::class], version = 1, exportSchema = true)
+@Database(entities = [OptionEntity::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun optionDao(): OptionDao
+
+    companion object {
+        @Volatile
+        private var Instance: AppDatabase? = null
+
+        fun getDatabase(context: Context): AppDatabase {
+            return Instance ?: synchronized(this) {
+                Room.databaseBuilder(context, AppDatabase::class.java, "option_database")
+                    .fallbackToDestructiveMigration()
+                    .build()
+                    .also { Instance = it }
+            }
+        }
+    }
 }
