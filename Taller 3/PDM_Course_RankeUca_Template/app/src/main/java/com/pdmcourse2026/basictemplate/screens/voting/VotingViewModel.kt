@@ -25,7 +25,13 @@ class VotingViewModel(
     private fun observePlaces() {
         viewModelScope.launch {
             repository.getPlacesFlow().collect { places ->
-                _uiState.update { it.copy(places = places) }
+                _uiState.update { state ->
+                    state.copy(
+                        places = places.map { place ->
+                            place.copy(isSelected = place.id == state.selectedPlaceId)
+                        }
+                    )
+                }
             }
         }
     }
@@ -44,7 +50,7 @@ class VotingViewModel(
     }
 
     fun vote(placeId: Int) {
-        if (_uiState.value.isVoteSuccessful) return
+        if (_uiState.value.isVoteSuccessful || _uiState.value.isLoading) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -56,8 +62,7 @@ class VotingViewModel(
                             selectedPlaceId = placeId,
                             isVoteSuccessful = true,
                             places = state.places.map { 
-                                val isSelected = it.id == placeId
-                                it.copy(isSelected = isSelected, votes = if (isSelected) it.votes + 1 else it.votes)
+                                it.copy(isSelected = it.id == placeId)
                             }
                         )
                     }

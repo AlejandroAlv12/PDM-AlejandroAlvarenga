@@ -8,15 +8,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
@@ -30,8 +28,18 @@ fun VotingScreen(
     onNavigateToResults: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            if (uiState.places.isNotEmpty()) {
+                snackbarHostState.showSnackbar(it)
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("RankeUCA - Votá") },
@@ -58,7 +66,9 @@ fun VotingScreen(
             }
         }
     ) { innerPadding ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading && uiState.places.isNotEmpty(),
+            onRefresh = { viewModel.loadPlaces() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -70,7 +80,11 @@ fun VotingScreen(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Error: ${uiState.error}", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = "Error: ${uiState.error}",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
                     Button(
                         onClick = { viewModel.loadPlaces() },
                         colors = ButtonDefaults.buttonColors(
@@ -93,10 +107,6 @@ fun VotingScreen(
                             enabled = !uiState.isVoteSuccessful && !uiState.isLoading
                         )
                     }
-                }
-                
-                if (uiState.isLoading && uiState.places.isNotEmpty()) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
             }
         }

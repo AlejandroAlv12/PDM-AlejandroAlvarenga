@@ -14,7 +14,6 @@ data class OptionEntity(
     val votes: Int = 0
 )
 
-// Funciones de extensión (Mappers)
 fun OptionEntity.toModel(): Option = Option(
     id = this.id,
     name = this.name,
