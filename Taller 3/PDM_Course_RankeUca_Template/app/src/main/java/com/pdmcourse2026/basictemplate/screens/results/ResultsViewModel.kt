@@ -10,24 +10,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+import kotlinx.coroutines.flow.collectLatest
+
 class ResultsViewModel(
-    private val repository: RankeUcaRepository = RankeUcaRepositoryImpl()
+    private val repository: RankeUcaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ResultsUiState())
     val uiState: StateFlow<ResultsUiState> = _uiState.asStateFlow()
 
     init {
+        observeResults()
         loadResults()
+    }
+
+    private fun observeResults() {
+        viewModelScope.launch {
+            repository.getPlacesFlow().collectLatest { places ->
+                val sortedPlaces = places.sortedByDescending { it.votes }
+                _uiState.update { it.copy(places = sortedPlaces) }
+            }
+        }
     }
 
     fun loadResults() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null, places = emptyList()) }
-            repository.getPlaces()
-                .onSuccess { places ->
-                    val sortedPlaces = places.sortedByDescending { it.votes }
-                    _uiState.update { it.copy(isLoading = false, places = sortedPlaces) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            repository.fetchPlaces()
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false) }
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message) }

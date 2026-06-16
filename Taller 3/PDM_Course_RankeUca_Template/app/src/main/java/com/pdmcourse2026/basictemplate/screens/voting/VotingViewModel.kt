@@ -11,22 +11,31 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class VotingViewModel(
-    private val repository: RankeUcaRepository = RankeUcaRepositoryImpl()
+    private val repository: RankeUcaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VotingUiState())
     val uiState: StateFlow<VotingUiState> = _uiState.asStateFlow()
 
     init {
+        observePlaces()
         loadPlaces()
+    }
+
+    private fun observePlaces() {
+        viewModelScope.launch {
+            repository.getPlacesFlow().collect { places ->
+                _uiState.update { it.copy(places = places) }
+            }
+        }
     }
 
     fun loadPlaces() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.getPlaces()
-                .onSuccess { places ->
-                    _uiState.update { it.copy(isLoading = false, places = places) }
+            repository.fetchPlaces()
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false) }
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message) }
