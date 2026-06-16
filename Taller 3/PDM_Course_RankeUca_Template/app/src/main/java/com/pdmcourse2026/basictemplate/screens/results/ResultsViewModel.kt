@@ -12,6 +12,11 @@ import kotlinx.coroutines.launch
 
 import kotlinx.coroutines.flow.collectLatest
 
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.pdmcourse2026.basictemplate.BasicTemplateApplication
+
 class ResultsViewModel(
     private val repository: RankeUcaRepository
 ) : ViewModel() {
@@ -43,6 +48,15 @@ class ResultsViewModel(
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message) }
                 }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as BasicTemplateApplication)
+                ResultsViewModel(repository = application.appProvider.rankeUcaRepository)
+            }
         }
     }
 }

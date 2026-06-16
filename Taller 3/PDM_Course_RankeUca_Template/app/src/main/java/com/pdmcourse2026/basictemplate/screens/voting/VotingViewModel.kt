@@ -68,7 +68,6 @@ class VotingViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             repository.voteForPlace(placeId)
                 .onSuccess {
-                    // Persistimos el estado del voto localmente
                     userPreferencesRepository.saveSelectedPlaceId(placeId)
                     userPreferencesRepository.saveVotedState(true)
                     _uiState.update { it.copy(isLoading = false) }
