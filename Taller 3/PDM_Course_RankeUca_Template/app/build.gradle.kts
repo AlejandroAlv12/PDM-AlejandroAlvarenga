@@ -74,6 +74,7 @@ dependencies {
   implementation(libs.coil.network.okhttp)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(libs.androidx.datastore.preferences)
   implementation(libs.ktor.client.core)
   implementation(libs.ktor.client.okhttp)
   implementation(libs.ktor.client.content.negotiation)

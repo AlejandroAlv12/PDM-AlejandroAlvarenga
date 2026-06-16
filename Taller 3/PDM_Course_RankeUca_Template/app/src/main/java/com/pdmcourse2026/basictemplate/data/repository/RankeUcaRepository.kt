@@ -2,7 +2,7 @@ package com.pdmcourse2026.basictemplate.data.repository
 
 import com.pdmcourse2026.basictemplate.data.api.RankeUcaService
 import com.pdmcourse2026.basictemplate.data.api.dto.OptionDto
-import com.pdmcourse2026.basictemplate.data.database.OptionDao
+import com.pdmcourse2026.basictemplate.data.database.dao.OptionDao
 import com.pdmcourse2026.basictemplate.data.database.entities.OptionEntity
 import com.pdmcourse2026.basictemplate.data.database.entities.toPlaceModel
 import com.pdmcourse2026.basictemplate.ui.models.PlaceModel
@@ -41,7 +41,6 @@ class RankeUcaRepositoryImpl(
         return try {
             val response = service.vote(optionId)
             if (response.ok) {
-                // Refresh data after voting to get updated counts
                 fetchPlaces()
                 Result.success(true)
             } else {
