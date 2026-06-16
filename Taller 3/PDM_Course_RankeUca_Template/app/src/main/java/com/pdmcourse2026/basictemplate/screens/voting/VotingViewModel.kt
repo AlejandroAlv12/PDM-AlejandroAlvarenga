@@ -1,35 +1,47 @@
 package com.pdmcourse2026.basictemplate.screens.voting
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.pdmcourse2026.basictemplate.BasicTemplateApplication
 import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepository
-import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepositoryImpl
+import com.pdmcourse2026.basictemplate.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class VotingViewModel(
-    private val repository: RankeUcaRepository
+    private val repository: RankeUcaRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VotingUiState())
     val uiState: StateFlow<VotingUiState> = _uiState.asStateFlow()
 
     init {
-        observePlaces()
+        observeData()
         loadPlaces()
     }
 
-    private fun observePlaces() {
+    private fun observeData() {
         viewModelScope.launch {
-            repository.getPlacesFlow().collect { places ->
+            combine(
+                repository.getPlacesFlow(),
+                userPreferencesRepository.hasVoted,
+                userPreferencesRepository.selectedPlaceId
+            ) { places, hasVoted, selectedId ->
+                Triple(places, hasVoted, selectedId)
+            }.collect { (places, hasVoted, selectedId) ->
                 _uiState.update { state ->
                     state.copy(
-                        places = places.map { place ->
-                            place.copy(isSelected = place.id == state.selectedPlaceId)
-                        }
+                        places = places.map { it.copy(isSelected = it.id == selectedId) },
+                        isVoteSuccessful = hasVoted,
+                        selectedPlaceId = selectedId
                     )
                 }
             }
@@ -56,16 +68,10 @@ class VotingViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             repository.voteForPlace(placeId)
                 .onSuccess {
-                    _uiState.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            selectedPlaceId = placeId,
-                            isVoteSuccessful = true,
-                            places = state.places.map {
-                                it.copy(isSelected = it.id == placeId)
-                            }
-                        )
-                    }
+                    // Persistimos el estado del voto localmente
+                    userPreferencesRepository.saveSelectedPlaceId(placeId)
+                    userPreferencesRepository.saveVotedState(true)
+                    _uiState.update { it.copy(isLoading = false) }
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, error = error.message) }
@@ -74,12 +80,20 @@ class VotingViewModel(
     }
 
     fun resetVote() {
-        _uiState.update { state ->
-            state.copy(
-                isVoteSuccessful = false,
-                selectedPlaceId = null,
-                places = state.places.map { it.copy(isSelected = false) }
-            )
+        viewModelScope.launch {
+            userPreferencesRepository.clearPreferences()
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as BasicTemplateApplication)
+                VotingViewModel(
+                    repository = application.appProvider.rankeUcaRepository,
+                    userPreferencesRepository = application.appProvider.userPreferencesRepository
+                )
+            }
         }
     }
 }

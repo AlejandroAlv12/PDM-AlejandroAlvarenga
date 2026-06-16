@@ -13,6 +13,7 @@ interface UserPreferencesRepository {
     val hasVoted: Flow<Boolean>
     suspend fun saveSelectedPlaceId(placeId: Int)
     suspend fun saveVotedState(voted: Boolean)
+    suspend fun clearPreferences()
 }
 
 class UserPreferencesRepositoryImpl(
@@ -43,6 +44,13 @@ class UserPreferencesRepositoryImpl(
     override suspend fun saveVotedState(voted: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.HAS_VOTED] = voted
+        }
+    }
+
+    override suspend fun clearPreferences() {
+        dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.SELECTED_PLACE_ID)
+            preferences[PreferencesKeys.HAS_VOTED] = false
         }
     }
 }
