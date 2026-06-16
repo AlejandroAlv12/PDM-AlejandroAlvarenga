@@ -31,5 +31,5 @@ fun Option.toEntity(): OptionEntity = OptionEntity(
     id = this.id,
     name = this.name,
     imageUrl = this.imageUrl,
-    votes = 0 // O el valor que corresponda si Option tuviera votos
+    votes = 0
 )

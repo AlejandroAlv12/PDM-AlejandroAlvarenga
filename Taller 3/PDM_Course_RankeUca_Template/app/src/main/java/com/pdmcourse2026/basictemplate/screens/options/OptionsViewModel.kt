@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 
 class OptionsViewModel(private val repository: OptionRepository) : ViewModel() {
 
-    // Exponemos el Flow del repositorio como un StateFlow
     val uiState: StateFlow<List<Option>> = repository.getAllOptions()
         .stateIn(
             scope = viewModelScope,

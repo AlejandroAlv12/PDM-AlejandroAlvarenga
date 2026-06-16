@@ -1,21 +1,18 @@
 package com.pdmcourse2026.basictemplate.screens.results
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepository
-import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepositoryImpl
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-
-import kotlinx.coroutines.flow.collectLatest
-
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.pdmcourse2026.basictemplate.BasicTemplateApplication
+import com.pdmcourse2026.basictemplate.data.repository.RankeUcaRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class ResultsViewModel(
     private val repository: RankeUcaRepository
