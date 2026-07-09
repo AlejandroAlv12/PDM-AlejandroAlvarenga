@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pdm0126.labo6.ui.viewmodel.MassiveVoteViewModel
@@ -46,6 +47,9 @@ fun MassiveVoteScreen(
     val uiState by viewModel.uiState.collectAsState()
     val selectedOptions by viewModel.selectedOptions.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val primaryColor = Color(0xFF3B3285)
+    val lightPurple = Color(0xFFF2F0FA)
 
     LaunchedEffect(Unit) {
         viewModel.refreshQuestions(apiKey)
@@ -67,8 +71,12 @@ fun MassiveVoteScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Voto Masivo") })
+            TopAppBar(
+                title = { Text("Voto Masivo", color = Color.White, fontWeight = FontWeight.Bold) },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(containerColor = primaryColor)
+            )
         },
+        containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         PullToRefreshBox(
@@ -91,7 +99,9 @@ fun MassiveVoteScreen(
                     items(questions, key = { it.question.id }) { item ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
@@ -133,9 +143,10 @@ fun MassiveVoteScreen(
                         Button(
                             onClick = { viewModel.submitVotes(apiKey) },
                             modifier = Modifier.fillMaxWidth(),
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = primaryColor),
                             enabled = selectedOptions.size == questions.size && questions.isNotEmpty() && !uiState.isLoading
                         ) {
-                            Text("Votar (${selectedOptions.size}/${questions.size})")
+                            Text("Votar (${selectedOptions.size}/${questions.size})", color = Color.White)
                         }
                     }
                 }
