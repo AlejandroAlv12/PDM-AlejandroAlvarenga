@@ -51,7 +51,6 @@ fun MassiveVoteScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val primaryColor = Color(0xFF3B3285)
-    val lightPurple = Color(0xFFF2F0FA)
 
     LaunchedEffect(Unit) {
         viewModel.refreshQuestions(apiKey)
