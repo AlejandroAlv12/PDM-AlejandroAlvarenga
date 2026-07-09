@@ -15,14 +15,14 @@ data class MassiveVoteUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val voteSuccess: Boolean = false,
-    val submittedVotes: Map<Int, Int> = emptyMap() // questionId -> optionId
+    val submittedVotes: Map<Int, Int> = emptyMap()
 )
 
 class MassiveVoteViewModel(
     private val repository: MassiveVoteRepository
 ) : ViewModel() {
 
-    // Questions observed directly from Room
+
     val questions: StateFlow<List<QuestionWithOptions>> = repository.getQuestionsWithOptions()
         .stateIn(
             scope = viewModelScope,
@@ -49,7 +49,7 @@ class MassiveVoteViewModel(
                 repository.refreshQuestions(apiKey)
                 _uiState.value = _uiState.value.copy(isLoading = false)
             } catch (e: Exception) {
-                // If it's 401, e.message might contain "401"
+
                 val errorMsg = if (e.message?.contains("401") == true) {
                     "Error 401: API Key inválida o no autorizada"
                 } else {
@@ -66,7 +66,7 @@ class MassiveVoteViewModel(
             try {
                 val currentVotes = _selectedOptions.value
                 repository.submitVotes(apiKey, currentVotes)
-                // Write-through success
+
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     voteSuccess = true,

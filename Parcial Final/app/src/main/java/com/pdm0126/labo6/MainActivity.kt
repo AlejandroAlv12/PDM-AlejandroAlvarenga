@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                                 apiKey = apiKey,
                                 onNavigateToResults = {
                                     navController.navigate("results/$apiKey") {
-                                        popUpTo("menu") { inclusive = false } // keeps menu, pops vote
+                                        popUpTo("menu") { inclusive = false }
                                     }
                                 }
                             )

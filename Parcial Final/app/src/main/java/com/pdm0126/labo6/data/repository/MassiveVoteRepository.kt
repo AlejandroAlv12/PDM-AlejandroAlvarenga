@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface MassiveVoteRepository {
     fun getQuestionsWithOptions(): Flow<List<QuestionWithOptions>>
     suspend fun refreshQuestions(apiKey: String)
-    suspend fun submitVotes(apiKey: String, votes: Map<Int, Int>) // Map<QuestionId, OptionId>
+    suspend fun submitVotes(apiKey: String, votes: Map<Int, Int>)
 }

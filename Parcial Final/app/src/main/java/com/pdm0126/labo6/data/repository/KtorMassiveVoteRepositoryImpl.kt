@@ -38,7 +38,7 @@ class KtorMassiveVoteRepositoryImpl(
             header("Authorization", "Bearer $apiKey")
         }.body()
 
-        // Convert DTOs to Entities and save to Room
+
         val questions = response.map { Question(it.id, it.text) }
         val options = response.flatMap { q ->
             q.options.map { o ->
@@ -70,7 +70,7 @@ class KtorMassiveVoteRepositoryImpl(
         val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
         val voteResponse = json.decodeFromString<VoteResponseDto>(responseText)
 
-        // Write-through: Update local database with the updated vote counts
+
         voteResponse.updated.forEach { updatedOption ->
             optionDao.updateVotes(
                 optionId = updatedOption.id,

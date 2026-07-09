@@ -62,7 +62,7 @@ fun MenuScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Preguntas
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -92,7 +92,7 @@ fun MenuScreen(
                 }
             }
 
-            // Opciones
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,7 +122,7 @@ fun MenuScreen(
                 }
             }
 
-            // Voto masivo with NUEVO badge
+
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
