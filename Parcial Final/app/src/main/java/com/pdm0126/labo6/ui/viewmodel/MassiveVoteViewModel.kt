@@ -42,24 +42,6 @@ class MassiveVoteViewModel(
         }
     }
 
-    fun refreshQuestions(apiKey: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                repository.refreshQuestions(apiKey)
-                _uiState.value = _uiState.value.copy(isLoading = false)
-            } catch (e: Exception) {
-
-                val errorMsg = if (e.message?.contains("401") == true) {
-                    "Error 401: API Key inválida o no autorizada"
-                } else {
-                    "Error de red: no se pudo sincronizar. Mostrando datos locales."
-                }
-                _uiState.value = _uiState.value.copy(isLoading = false, error = errorMsg)
-            }
-        }
-    }
-
     fun submitVotes(apiKey: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)

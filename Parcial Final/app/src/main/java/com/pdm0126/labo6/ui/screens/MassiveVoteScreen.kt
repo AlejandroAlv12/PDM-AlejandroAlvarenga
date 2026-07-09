@@ -24,7 +24,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,10 +51,6 @@ fun MassiveVoteScreen(
     val primaryColor = Color(0xFF3B3285)
     val lightPurple = Color(0xFFF2F0FA)
 
-    LaunchedEffect(Unit) {
-        viewModel.refreshQuestions(apiKey)
-    }
-
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
             snackbarHostState.showSnackbar(it)
@@ -80,16 +75,14 @@ fun MassiveVoteScreen(
         containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-        PullToRefreshBox(
-            isRefreshing = uiState.isLoading,
-            onRefresh = { viewModel.refreshQuestions(apiKey) },
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (questions.isEmpty() && !uiState.isLoading) {
+            if (questions.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No hay preguntas disponibles. Tira hacia abajo para recargar.")
+                    Text("No hay preguntas disponibles localmente.")
                 }
             } else {
                 LazyColumn(
