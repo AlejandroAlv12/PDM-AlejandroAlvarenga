@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pdm0126.labo6.ui.viewmodel.MassiveVoteViewModel
 
@@ -50,6 +52,10 @@ fun MassiveVoteScreen(
 
     val primaryColor = Color(0xFF3B3285)
     val lightPurple = Color(0xFFF2F0FA)
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshQuestions(apiKey)
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -75,14 +81,16 @@ fun MassiveVoteScreen(
         containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.refreshQuestions(apiKey) },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (questions.isEmpty()) {
+            if (questions.isEmpty() && !uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No hay preguntas disponibles localmente.")
+                    Text("No hay preguntas disponibles. Tira hacia abajo para recargar.")
                 }
             } else {
                 LazyColumn(
@@ -90,6 +98,22 @@ fun MassiveVoteScreen(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    item {
+                        Text(
+                            text = "↓ deslizá para actualizar",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            color = Color.LightGray,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Elegí una opción por pregunta",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                     items(questions, key = { it.question.id }) { item ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -123,8 +147,8 @@ fun MassiveVoteScreen(
                                             selected = isSelected,
                                             onClick = { viewModel.selectOption(item.question.id, option.id) },
                                             colors = RadioButtonDefaults.colors(
-                                                selectedColor = Color.Black,
-                                                unselectedColor = Color.Black
+                                                selectedColor = primaryColor,
+                                                unselectedColor = Color.Gray
                                             )
                                         )
                                         Text(
@@ -143,12 +167,12 @@ fun MassiveVoteScreen(
                             onClick = { viewModel.submitVotes(apiKey) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
+                                containerColor = primaryColor,
                                 disabledContainerColor = Color.LightGray
                             ),
                             enabled = selectedOptions.size == votableQuestions.size && votableQuestions.isNotEmpty() && !uiState.isLoading
                         ) {
-                            Text("Votar (${selectedOptions.size}/${votableQuestions.size})", color = Color.White)
+                            Text("Votar", color = Color.White)
                         }
                     }
                 }

@@ -27,6 +27,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,19 +65,16 @@ fun MassiveVoteResultScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Resultados de Votación", color = Color.White, fontWeight = FontWeight.Bold) },
-                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(containerColor = primaryColor),
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
-                    }
-                }
+                title = { Text("Resultados", color = Color.White, fontWeight = FontWeight.Bold) },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(containerColor = primaryColor)
             )
         },
         containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.refreshQuestions(apiKey) },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -86,6 +84,22 @@ fun MassiveVoteResultScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    Text(
+                        text = "↓ deslizá para actualizar",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        color = Color.LightGray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "★ tu voto",
+                        fontWeight = FontWeight.Bold,
+                        color = primaryColor,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 items(questions, key = { it.question.id }) { item ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -110,33 +124,36 @@ fun MassiveVoteResultScreen(
                                 val fraction = (option.votes.toFloat() / maxVotes).coerceIn(0f, 1f)
                                 
                                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = if (isMyVote) "${option.value} (Tu Voto)" else option.value,
-                                            fontWeight = if (isMyVote) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isMyVote) primaryColor else Color.DarkGray
-                                        )
-                                        Text(text = "${option.votes} votos")
-                                    }
+                                    Text(
+                                        text = if (isMyVote) "★ ${option.value}" else option.value,
+                                        fontWeight = if (isMyVote) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isMyVote) primaryColor else Color.DarkGray,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(8.dp)
-                                            .background(lightPurple, RoundedCornerShape(4.dp))
-                                    ) {
-                                        if (fraction > 0f) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(fraction)
-                                                    .height(8.dp)
-                                                    .clip(RoundedCornerShape(4.dp))
-                                                    .background(if (isMyVote) primaryColor else Color.LightGray)
-                                            )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(8.dp)
+                                                .background(lightPurple, RoundedCornerShape(4.dp))
+                                        ) {
+                                            if (fraction > 0f) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth(fraction)
+                                                        .height(8.dp)
+                                                        .clip(RoundedCornerShape(4.dp))
+                                                        .background(if (isMyVote) primaryColor else primaryColor.copy(alpha = 0.6f))
+                                                )
+                                            }
                                         }
+                                        Text(
+                                            text = option.votes.toString(),
+                                            modifier = Modifier.padding(start = 8.dp),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
@@ -149,9 +166,10 @@ fun MassiveVoteResultScreen(
                     Button(
                         onClick = onNavigateBack,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = primaryColor)
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.White),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, primaryColor)
                     ) {
-                        Text("Nuevo Voto", color = Color.White)
+                        Text("Nuevo (volver a votar)", color = primaryColor)
                     }
                 }
             }

@@ -33,7 +33,23 @@ class KtorMassiveVoteRepositoryImpl(
         return questionDao.getQuestionsWithOptions()
     }
 
+    override suspend fun refreshQuestions(apiKey: String) {
+        val response: List<QuestionDto> = KtorClient.client.get("$baseUrl/questions") {
+            header("Authorization", "Bearer $apiKey")
+        }.body()
 
+        val questions = response.map { Question(it.id, it.text) }
+        val options = response.flatMap { q ->
+            q.options.map { o ->
+                Option(id = o.id, questionId = q.id, value = o.value, votes = o.votes)
+            }
+        }
+        questionDao.deleteAll()
+        optionDao.deleteAll()
+        
+        questionDao.upsertAll(questions)
+        optionDao.upsertAll(options)
+    }
 
     override suspend fun submitVotes(apiKey: String, votes: Map<Int, Int>) {
         val voteItems = votes.map { VoteItemDto(questionId = it.key, optionId = it.value) }
