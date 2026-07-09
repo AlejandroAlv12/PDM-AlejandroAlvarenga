@@ -18,6 +18,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -127,7 +128,11 @@ fun MassiveVoteScreen(
                                     ) {
                                         RadioButton(
                                             selected = isSelected,
-                                            onClick = { viewModel.selectOption(item.question.id, option.id) }
+                                            onClick = { viewModel.selectOption(item.question.id, option.id) },
+                                            colors = RadioButtonDefaults.colors(
+                                                selectedColor = Color.Black,
+                                                unselectedColor = Color.Black
+                                            )
                                         )
                                         Text(
                                             text = option.value,
@@ -140,13 +145,17 @@ fun MassiveVoteScreen(
                     }
 
                     item {
+                        val votableQuestions = questions.filter { it.options.isNotEmpty() }
                         Button(
                             onClick = { viewModel.submitVotes(apiKey) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = primaryColor),
-                            enabled = selectedOptions.size == questions.size && questions.isNotEmpty() && !uiState.isLoading
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = Color.Black,
+                                disabledContainerColor = Color.LightGray
+                            ),
+                            enabled = selectedOptions.size == votableQuestions.size && votableQuestions.isNotEmpty() && !uiState.isLoading
                         ) {
-                            Text("Votar (${selectedOptions.size}/${questions.size})", color = Color.White)
+                            Text("Votar (${selectedOptions.size}/${votableQuestions.size})", color = Color.White)
                         }
                     }
                 }

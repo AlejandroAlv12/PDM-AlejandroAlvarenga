@@ -15,8 +15,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 
 class KtorMassiveVoteRepositoryImpl(
@@ -42,6 +45,8 @@ class KtorMassiveVoteRepositoryImpl(
                 Option(id = o.id, questionId = q.id, value = o.value, votes = o.votes)
             }
         }
+        questionDao.deleteAll()
+        optionDao.deleteAll()
         
         questionDao.upsertAll(questions)
         optionDao.upsertAll(options)
@@ -51,14 +56,22 @@ class KtorMassiveVoteRepositoryImpl(
         val voteItems = votes.map { VoteItemDto(questionId = it.key, optionId = it.value) }
         val requestDto = VoteRequestDto(votes = voteItems)
 
-        val response: VoteResponseDto = KtorClient.client.post("$baseUrl/votes") {
+        val response: HttpResponse = KtorClient.client.post("$baseUrl/votes") {
             header("Authorization", "Bearer $apiKey")
             contentType(ContentType.Application.Json)
             setBody(requestDto)
-        }.body()
+        }
+        
+        val responseText = response.bodyAsText()
+        if (!response.status.isSuccess() || responseText.contains("\"ok\":false")) {
+            throw Exception(responseText)
+        }
+
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val voteResponse = json.decodeFromString<VoteResponseDto>(responseText)
 
         // Write-through: Update local database with the updated vote counts
-        response.updated.forEach { updatedOption ->
+        voteResponse.updated.forEach { updatedOption ->
             optionDao.updateVotes(
                 optionId = updatedOption.id,
                 questionId = updatedOption.questionId,
