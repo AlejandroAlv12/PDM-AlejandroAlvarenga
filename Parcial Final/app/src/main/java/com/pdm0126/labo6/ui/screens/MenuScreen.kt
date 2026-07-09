@@ -162,23 +162,6 @@ fun MenuScreen(
                         )
                     }
                 }
-                
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(end = 24.dp)
-                        .background(primaryColor, RoundedCornerShape(percent = 50))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                        .zIndex(1f)
-                ) {
-                    Text(
-                        text = "NUEVO",
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                }
             }
         }
     }
