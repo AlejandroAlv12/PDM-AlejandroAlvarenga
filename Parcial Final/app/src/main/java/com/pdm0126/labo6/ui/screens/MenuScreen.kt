@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 fun MenuScreen(
     onNavigateToVote: (String) -> Unit
 ) {
-    var apiKey by rememberSaveable { mutableStateOf("") }
+    var apiKey by rememberSaveable { mutableStateOf("f61af755-ad31-4b08-96c6-c17ee00b3e34") }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("RankeUCA Menú") }) }
